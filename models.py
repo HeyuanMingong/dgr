@@ -50,24 +50,14 @@ class WGAN(dgr.Generator):
 
             # run the critic on the real data.
             c_loss_real, g_real = self._c_loss(x, z, return_g=True)
-            c_loss_real_gp = (
-                c_loss_real + self._gradient_penalty(x, g_real, self.lamda)
-            )
+            c_loss_real_gp = (c_loss_real + self._gradient_penalty(x, g_real, self.lamda))
 
             # run the critic on the replayed data.
             if x_ is not None and y_ is not None:
                 c_loss_replay, g_replay = self._c_loss(x_, z, return_g=True)
-                c_loss_replay_gp = (c_loss_replay + self._gradient_penalty(
-                    x_, g_replay, self.lamda
-                ))
-                c_loss = (
-                    importance_of_new_task * c_loss_real +
-                    (1-importance_of_new_task) * c_loss_replay
-                )
-                c_loss_gp = (
-                    importance_of_new_task * c_loss_real_gp +
-                    (1-importance_of_new_task) * c_loss_replay_gp
-                )
+                c_loss_replay_gp = (c_loss_replay + self._gradient_penalty(x_, g_replay, self.lamda))
+                c_loss = (importance_of_new_task * c_loss_real + (1-importance_of_new_task) * c_loss_replay)
+                c_loss_gp = (importance_of_new_task * c_loss_real_gp + (1-importance_of_new_task) * c_loss_replay_gp)
             else:
                 c_loss = c_loss_real
                 c_loss_gp = c_loss_real_gp
@@ -159,16 +149,10 @@ class CNN(dgr.Solver):
         self.reducing_layers = reducing_layers
 
         # layers
-        self.layers = nn.ModuleList([nn.Conv2d(
-            self.image_channel_size, self.channel_size//(2**(depth-2)),
-            3, 1, 1
-        )])
+        self.layers = nn.ModuleList([nn.Conv2d(self.image_channel_size, self.channel_size//(2**(depth-2)), 3, 1, 1)])
 
         for i in range(self.depth-2):
-            previous_conv = [
-                l for l in self.layers if
-                isinstance(l, nn.Conv2d)
-            ][-1]
+            previous_conv = [l for l in self.layers if isinstance(l, nn.Conv2d)][-1]
             self.layers.append(nn.Conv2d(
                 previous_conv.out_channels,
                 previous_conv.out_channels * 2,
@@ -178,10 +162,7 @@ class CNN(dgr.Solver):
             self.layers.append(nn.ReLU())
 
         self.layers.append(utils.LambdaModule(lambda x: x.view(x.size(0), -1)))
-        self.layers.append(nn.Linear(
-            (image_size//(2**reducing_layers))**2 * channel_size,
-            self.classes
-        ))
+        self.layers.append(nn.Linear((image_size//(2**reducing_layers))**2 * channel_size, self.classes))
 
     def forward(self, x):
         return reduce(lambda x, l: l(x), self.layers, x)

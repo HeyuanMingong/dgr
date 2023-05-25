@@ -111,13 +111,8 @@ class Scholar(GenerativeMixin, nn.Module):
             solver_training_callbacks=None,
             collate_fn=None):
         # scholar and previous datasets cannot be given at the same time.
-        mutex_condition_infringed = all([
-            scholar is not None,
-            bool(previous_datasets)
-        ])
-        assert not mutex_condition_infringed, (
-            'scholar and previous datasets cannot be given at the same time'
-        )
+        mutex_condition_infringed = all([scholar is not None, bool(previous_datasets)])
+        assert not mutex_condition_infringed, ('scholar and previous datasets cannot be given at the same time')
 
         # train the generator of the scholar.
         self._train_batch_trainable_with_replay(
@@ -159,10 +154,7 @@ class Scholar(GenerativeMixin, nn.Module):
             return
 
         # create data loaders.
-        data_loader = iter(utils.get_data_loader(
-            dataset, batch_size, cuda=self._is_on_cuda(),
-            collate_fn=collate_fn,
-        ))
+        data_loader = iter(utils.get_data_loader(dataset, batch_size, cuda=self._is_on_cuda(), collate_fn=collate_fn,))
         data_loader_previous = iter(utils.get_data_loader(
             ConcatDataset(previous_datasets), batch_size,
             cuda=self._is_on_cuda(), collate_fn=collate_fn,
@@ -195,10 +187,7 @@ class Scholar(GenerativeMixin, nn.Module):
                 y_ = Variable(y_).cuda() if cuda else Variable(y_)
 
             # train the model with a batch.
-            result = trainable.train_a_batch(
-                x, y, x_=x_, y_=y_,
-                importance_of_new_task=importance_of_new_task
-            )
+            result = trainable.train_a_batch(x, y, x_=x_, y_=y_, importance_of_new_task=importance_of_new_task)
 
             # fire the callbacks on each iteration.
             for callback in (training_callbacks or []):

@@ -48,9 +48,7 @@ def train(scholar, train_datasets, test_datasets, replay_mode,
     scholar.generator.set_lambda(generator_lambda)
     scholar.generator.set_generator_optimizer(generator_g_optimizer)
     scholar.generator.set_critic_optimizer(generator_c_optimizer)
-    scholar.generator.set_critic_updates_per_generator_update(
-        generator_c_updates_per_g_update
-    )
+    scholar.generator.set_critic_updates_per_generator_update(generator_c_updates_per_g_update)
     scholar.train()
 
     # define the previous scholar who will generate samples of previous tasks.
@@ -102,14 +100,8 @@ def train(scholar, train_datasets, test_datasets, replay_mode,
             collate_fn=collate_fn,
         )
 
-        previous_scholar = (
-            copy.deepcopy(scholar) if replay_mode == 'generative-replay' else
-            None
-        )
-        previous_datasets = (
-            train_datasets[:task] if replay_mode == 'exact-replay' else
-            None
-        )
+        previous_scholar = (copy.deepcopy(scholar) if replay_mode == 'generative-replay' else None)
+        previous_datasets = (train_datasets[:task] if replay_mode == 'exact-replay' else None)
 
     # save the model after the experiment.
     print()
@@ -153,20 +145,13 @@ def _generator_training_callback(
 
         # log the losses of the generator.
         if iteration % loss_log_interval == 0:
-            visual.visualize_scalar(
-                result['g_loss'], 'generator g loss', iteration, env=env
-            )
-            visual.visualize_scalar(
-                -result['c_loss'], 'generator w distance', iteration, env=env
-            )
+            visual.visualize_scalar(result['g_loss'], 'generator g loss', iteration, env=env)
+            visual.visualize_scalar(-result['c_loss'], 'generator w distance', iteration, env=env)
 
         # log the generated images of the generator.
         if iteration % image_log_interval == 0:
-            visual.visualize_images(
-                generator.sample(sample_size).data,
-                'generated samples ({replay_mode})'
-                .format(replay_mode=replay_mode), env=env,
-            )
+            visual.visualize_images(generator.sample(sample_size).data, 'generated samples ({replay_mode})'.format(
+                replay_mode=replay_mode), env=env,)
 
         # log the sample images of the generator
         if iteration % sample_log_interval == 0 and sample_log:
@@ -213,9 +198,7 @@ def _solver_training_callback(
 
         # log the loss of the solver.
         if iteration % loss_log_interval == 0:
-            visual.visualize_scalar(
-                result['loss'], 'solver loss', iteration, env=env
-            )
+            visual.visualize_scalar(result['loss'], 'solver loss', iteration, env=env)
 
         # evaluate the solver on multiple tasks.
         if iteration % eval_log_interval == 0:
@@ -228,9 +211,6 @@ def _solver_training_callback(
                 range(len(test_datasets))
             ]
             title = 'precision ({replay_mode})'.format(replay_mode=replay_mode)
-            visual.visualize_scalars(
-                precs, names, title,
-                iteration, env=env
-            )
+            visual.visualize_scalars(precs, names, title, iteration, env=env)
 
     return cb
